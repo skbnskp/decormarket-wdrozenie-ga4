@@ -4,9 +4,13 @@
 
 Wersja dokumentu: 1.3
 
+Autor: Patryk Skibiński
+
 Status: Do wdrożenia
 
 Odbiorca: Dział IT / Programiści
+
+🔗 [Zobacz wersję dokumentacji w Notion](https://hill-wrist-ec0.notion.site/Zmiany-w-kodzie-domeny-decormarket-pl-2e1e9eafec2c80c98fb9ef784bf4e684?source=copy_link)
 
 ---
 
