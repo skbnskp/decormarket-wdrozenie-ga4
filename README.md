@@ -123,6 +123,7 @@ Poniżej przedstawiono tabelę wszystkich parametrów związanych z e-commerce, 
 | customer_type           | **`{{eventModel.customer_type}}`**                          | 🔴 Do wdrożenia              |
 | method                  | **`{{eventModel.method}}`**                                 | 🔴 Do wdrożenia              |
 | user_id                 | **`{{eventModel.user_id}}`**                                | 🔴 Do wdrożenia              |
+| user_category           | **`{{eventModel.user_category}}`**                          | 🔴 Do wdrożenia              |
 | user_data.email_address | **`{{eventModel.user_id}}`**                                | 🔴 Do wdrożenia              |
 | user_data.phone_number  | **`{{eventModel.user_id}}`**                                | 🔴 Do wdrożenia              |
 
@@ -1373,7 +1374,7 @@ Zgodnie z dokumentacją Google, GA4 przy zdarzeniu `sign_up` wymaga parametru `m
 
 1. **Moment wywołania (Trigger):** Zdarzenie powinno zostać wywołane po **pomyślnym** utworzeniu konta (np. po kliknięciu "Zarejestruj" i przejściu walidacji lub po automatycznym zalogowaniu po rejestracji).
 2. **Parametr `method`:** Określa sposób rejestracji (np. "email", "google", "facebook").
-3. **Typ klienta:** Detekcja typu klienta (customer_type): Ponieważ formularz nie posiada dedykowanego przełącznika "Konto firmowe", programista musi ustalić typ klienta na podstawie wypełnionych pól:
+3. **Typ klienta:** Detekcja typu klienta (user_category): Ponieważ formularz nie posiada dedykowanego przełącznika "Konto firmowe", programista musi ustalić typ klienta na podstawie wypełnionych pól:
    - Jeżeli użytkownik wypełnił pole NIP lub Nazwa firmy -> wysyłamy wartość "B2B".
    - Jeżeli pola te pozostały puste -> wysyłamy wartość "B2C"..
 
@@ -1392,7 +1393,7 @@ Obecnie zdarzenie nie jest mierzone. Proszę, aby przy wydarzeniu `sign_up`  wyw
       eventModel: {
         method: "email",     // Metoda rejestracji: "email", "google", "facebook"
         // Opcjonalnie, jeśli formularz na to pozwala:
-        customer_type: "B2C" // "B2B" lub "B2C"
+        user_category: "B2C" // "B2B" lub "B2C"
       }
     });
     ```
@@ -1413,7 +1414,7 @@ Zgodnie z dokumentacją Google, GA4 przy zdarzeniu `login` wymaga parametru `met
 
 1. **Moment wywołania (Trigger):** Zdarzenie wysyłane po pomyślnym zalogowaniu użytkownika.
 2. **Parametr `user_id` (Kluczowy):** Jest to najważniejszy element tego zdarzenia. Jeśli system posiada stałe ID użytkownika w bazie danych (np. "884512"), należy je tutaj przesłać. Nie wolno przesyłać adresu email ani imienia/nazwiska (RODO/GDPR).
-3. **Parametr `customer_type`:** W momencie logowania system backendowy wie, czy loguje się klient B2B czy detaliczny. Należy przekazać tę informację tutaj, aby ustawić ją jako cechę użytkownika na całą sesję.
+3. **Parametr `user_category`:** W momencie logowania system backendowy wie (na podstawie wpisanego NIP przy rejestracji), czy loguje się klient B2B czy detaliczny. Należy przekazać tę informację tutaj, aby ustawić ją jako cechę użytkownika na całą sesję.
 
 ### Javascript
 
@@ -1431,7 +1432,7 @@ Obecnie zdarzenie nie jest mierzone. Proszę, aby przy wydarzeniu `login`  wywo�
       eventModel: {
         user_id: "884512",      // Unikalne ID klienta z bazy danych (String)
         method: "email",      // Metoda logowania
-        customer_type: "B2B"  // "B2C" lub "B2B" - typ konta pobrany z bazy
+        user_category: "B2B"  // "B2C" lub "B2B" - typ konta pobrany z bazy
       }
     });
     ```
