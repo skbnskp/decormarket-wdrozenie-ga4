@@ -97,7 +97,7 @@ Ze względu na zastosowanie niestandardowego obiektu `eventModel`, konfiguracja 
 - **Handel elektroniczny (Ecommerce settings):** Ze względu na mapowanie ręczne opcja "Wyślij dane związane z handlem elektronicznym" jest odznaczona.
 - **Typ reguły:** Zdarzenie niestandardowe (Custom Event).
 - **Metoda dopasowania:** Wyrażenie regularne (Regex).
-- **Nazwa reguły** (wyrażenie regex)**:** view_item|view_item_list|select_item|add_to_cart|remove_from_cart|view_cart|begin_checkout|add_payment_info|add_shipping_info|purchase
+- **Nazwa reguły** (wyrażenie regex)**:** view_item|view_item_list|select_item|add_to_cart|remove_from_cart|view_cart|begin_checkout|add_payment_info|add_shipping_info|purchase|add_to_wishlist|search|sign_up|login
   - *Wykorzystanie reguły o nazwie z zastosowaniem wyrażenia regularnego (Regex) sprawia, że Tag aktywuje się w przypadku wszystkich zdarzeń ecommerce wymienionych w tymże wyrażeniu.*
 
 ---
