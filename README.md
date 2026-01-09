@@ -106,23 +106,25 @@ Ze względu na zastosowanie niestandardowego obiektu `eventModel`, konfiguracja 
 
 Poniżej przedstawiono tabelę wszystkich parametrów związanych z e-commerce, przechwytywanych przez Tag, które muszą być uwzględniane w dataLayer, podczas wykrywania różnych zdarzeń.
 
-| **Nazwa Parametru** | **Wartość Zmiennej w Warstwie Danych (DataLayer Variable)** | **Stan parametru**          |
-| ------------------- | ----------------------------------------------------------- | --------------------------- |
-| items               | **`{{eventModel.items}}`**                                  | 🟡 DataLayer do aktualizacji |
-| value               | **`{{eventModel.value}}`**                                  | 🟢 Poprawny                  |
-| currency            | **`{{eventModel.currency}}`**                               | 🟢 Poprawny                  |
-| transaction_id      | **`{{eventModel.transaction_id}}`**                         | 🟢 Poprawny                  |
-| tax                 | **`{{eventModel.tax}}`**                                    | 🔴 Do wdrożenia              |
-| shipping            | **`{{eventModel.shipping}}`**                               | 🔴 Do wdrożenia              |
-| coupon              | **`{{eventModel.coupon}}`**                                 | 🔴 Do wdrożenia              |
-| shipping_tier       | **`{{eventModel.shipping_tier}}`**                          | 🔴 Do wdrożenia              |
-| payment_type        | **`{{eventModel.payment_type}}`**                           | 🔴 Do wdrożenia              |
-| item_list_id        | **`{{eventModel.item_list_id}}`**                           | 🔴 Do wdrożenia              |
-| item_list_name      | **`{{eventModel.item_list_name}}`**                         | 🔴 Do wdrożenia              |
-| search_term         | **`{{eventModel.search_term}}`**                            | 🔴 Do wdrożenia              |
-| customer_type       | **`{{eventModel.customer_type}}`**                          | 🔴 Do wdrożenia              |
-| method              | **`{{eventModel.method}}`**                                 | 🔴 Do wdrożenia              |
-| user_id              | **`{{eventModel.user_id}}`**                                 | 🔴 Do wdrożenia              |
+| **Nazwa Parametru**     | **Wartość Zmiennej w Warstwie Danych (DataLayer Variable)** | **Stan parametru**          |
+| ----------------------- | ----------------------------------------------------------- | --------------------------- |
+| items                   | **`{{eventModel.items}}`**                                  | 🟡 DataLayer do aktualizacji |
+| value                   | **`{{eventModel.value}}`**                                  | 🟢 Poprawny                  |
+| currency                | **`{{eventModel.currency}}`**                               | 🟢 Poprawny                  |
+| transaction_id          | **`{{eventModel.transaction_id}}`**                         | 🟢 Poprawny                  |
+| tax                     | **`{{eventModel.tax}}`**                                    | 🔴 Do wdrożenia              |
+| shipping                | **`{{eventModel.shipping}}`**                               | 🔴 Do wdrożenia              |
+| coupon                  | **`{{eventModel.coupon}}`**                                 | 🔴 Do wdrożenia              |
+| shipping_tier           | **`{{eventModel.shipping_tier}}`**                          | 🔴 Do wdrożenia              |
+| payment_type            | **`{{eventModel.payment_type}}`**                           | 🔴 Do wdrożenia              |
+| item_list_id            | **`{{eventModel.item_list_id}}`**                           | 🔴 Do wdrożenia              |
+| item_list_name          | **`{{eventModel.item_list_name}}`**                         | 🔴 Do wdrożenia              |
+| search_term             | **`{{eventModel.search_term}}`**                            | 🔴 Do wdrożenia              |
+| customer_type           | **`{{eventModel.customer_type}}`**                          | 🔴 Do wdrożenia              |
+| method                  | **`{{eventModel.method}}`**                                 | 🔴 Do wdrożenia              |
+| user_id                 | **`{{eventModel.user_id}}`**                                | 🔴 Do wdrożenia              |
+| user_data.email_address | **`{{eventModel.user_id}}`**                                | 🔴 Do wdrożenia              |
+| user_data.phone_number  | **`{{eventModel.user_id}}`**                                | 🔴 Do wdrożenia              |
 
 ---
 
@@ -896,10 +898,11 @@ Linki to dokumentacji Google dot. zdarzenia purchase:
 
 ### **Kluczowe zmiany**
 
-1. Nowe parametry w obiekcie eventModel: tax, shipping, coupon, customer_type
+1. Nowe parametry w obiekcie eventModel: tax, shipping, coupon, customer_type.
 2. Dodanie pełnego drzewa kategorii w obiekcie items (do 5 poziomów).
 3. Przekazywanie kontekstu listy w obiekcie items (item_list_id, item_list_name, index).
-4. Dodanie nowych parametrów w obiekcie items: coupon, discount
+4. Dodanie nowych parametrów w obiekcie items: coupon, discount.
+5. Dodanie parametrów user_data.email_address oraz user_data.phone_number. Na podstawie tych danych będzie działał Tag GAds Remarketing.
 
 ### Javascript
 
@@ -946,13 +949,20 @@ Proszę o wywoływanie kodu JavaScript w momencie kliknięcia przycisku "Kupuję
       ads_data_redaction: false,
       // UWAGA: Używamy 'eventModel' zamiast standardowego 'ecommerce'
       eventModel: {
-       currency: "PLN",               // Waluta
-       value: 34.08,                  // Wartość CAŁKOWITA zamówienia (Brutto, z dostawą) - liczba
+        currency: "PLN",               // Waluta
+        value: 34.08,                  // Wartość CAŁKOWITA zamówienia (Brutto, z dostawą) - liczba
         transaction_id: "39155/2025",  // ID zamówienia (Unikalne)
         tax: 6.37,                     // NOWE: Kwota podatku VAT (liczba)
         shipping: 15.00,               // NOWE: Koszt dostawy (liczba)
         coupon: "LATO_2025",           // NOWE: Kod kuponu rabatowego na całe zamówienie (jeśli użyto)
-        customer_type: "returning"     // NOWE: Typ klienta (new / returning) na podstawie bazy klientów sklepu (nieoparte na cookies)
+        customer_type: "returning",     // NOWE: Typ klienta (new / returning) na podstawie bazy klientów sklepu (nieoparte na cookies)
+        // --- NOWOŚĆ: Sekcja User Data dla Google Ads (Enhanced Conversions) ---
+        // WAŻNE: Te dane muszą pochodzić z backendu/bazy danych, a nie z HTML strony.
+        // GTM automatycznie zahaszuje (zaszyfruje) te dane przed wysłaniem do Google.
+        user_data: {
+          email_address: "jan.kowalski@example.com", // Adres e-mail klienta
+          phone_number: "+48123456789",              // Numer telefonu (format E.164 zalecany)
+        },
         items: [
           {
             item_id: "22538",          // ID produktu (SKU)
