@@ -124,8 +124,8 @@ Poniżej przedstawiono tabelę wszystkich parametrów związanych z e-commerce, 
 | method                  | **`{{eventModel.method}}`**                                 | 🔴 Do wdrożenia              |
 | user_id                 | **`{{eventModel.user_id}}`**                                | 🔴 Do wdrożenia              |
 | user_category           | **`{{eventModel.user_category}}`**                          | 🔴 Do wdrożenia              |
-| user_data.email_address | **`{{eventModel.user_id}}`**                                | 🔴 Do wdrożenia              |
-| user_data.phone_number  | **`{{eventModel.user_id}}`**                                | 🔴 Do wdrożenia              |
+| user_data.email_address | **`{{eventModel.email_address}}`**                          | 🔴 Do wdrożenia              |
+| user_data.phone_number  | **`{{eventModel.phone_number}}`**                           | 🔴 Do wdrożenia              |
 
 ---
 
