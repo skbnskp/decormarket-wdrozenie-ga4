@@ -65,7 +65,7 @@ W tej tabeli wymieniono zdarzenia, które należy zaktualizować lub wdrożyć, 
 
 | **Nazwa Zdarzenia (Event)** | **Miejsce wywołania (Trigger)**                      | **Status**                     |
 | --------------------------- | ---------------------------------------------------- | ------------------------------ |
-| view_item_list              | Przewinięcie strony do sekcji (np. Bestsellery)      | 🔴 **Do wdrożenia**             |
+| view_item_list              | Przewinięcie strony do sekcji (np. Bestsellery)      | 🟡 **Do poprawy**               |
 | select_item                 | Kliknięcie w produkt na liście (np. w Bestsellerach) | 🔴 **Do wdrożenia**             |
 | view_item                   | Wyświetlenie szczegółów produktu (karta produktu)    | 🟡 DataLayer do zaktualizowania |
 | search                      | Załadowanie strony wyników wyszukiwania              | 🔴 **Do wdrożenia**             |
@@ -117,8 +117,8 @@ Poniżej przedstawiono tabelę wszystkich parametrów związanych z e-commerce, 
 | coupon                  | **`{{eventModel.coupon}}`**                                 | 🔴 Do wdrożenia              |
 | shipping_tier           | **`{{eventModel.shipping_tier}}`**                          | 🔴 Do wdrożenia              |
 | payment_type            | **`{{eventModel.payment_type}}`**                           | 🔴 Do wdrożenia              |
-| item_list_id            | **`{{eventModel.item_list_id}}`**                           | 🔴 Do wdrożenia              |
-| item_list_name          | **`{{eventModel.item_list_name}}`**                         | 🔴 Do wdrożenia              |
+| item_list_id            | **`{{eventModel.item_list_id}}`**                           | 🟡 Do poprawy                |
+| item_list_name          | **`{{eventModel.item_list_name}}`**                         | 🟢 Poprawny                  |
 | search_term             | **`{{eventModel.search_term}}`**                            | 🔴 Do wdrożenia              |
 | customer_type           | **`{{eventModel.customer_type}}`**                          | 🔴 Do wdrożenia              |
 | method                  | **`{{eventModel.method}}`**                                 | 🔴 Do wdrożenia              |
@@ -211,7 +211,7 @@ Zaznaczam, że zmienna **`currency`** nie powinna znajdować się w obiekcie **`
 
 ## Szczegółowy opis wymagań dot. zmiennych **`item_list_name`**, **`item_list_id`**, **`index`**
 
-Wprowadzenie tych trzech nowych zmiennych w obiekcie **`items`** jest kluczowe dla analityki. Pozwalają one ocenić efektywność **list produktów** znajdujących się w różnych sekcjach stron sklepu [decormarket.pl](http://decormarket.pl). Sekcje oraz zalecane wartości powiązanych z nimi zmiennych wymieniono w tabeli poniżej.
+Wprowadzenie tych trzech zmiennych w obiekcie **`items`** jest kluczowe dla analityki. Pozwalają one ocenić efektywność **list produktów** znajdujących się w różnych sekcjach stron sklepu [decormarket.pl](http://decormarket.pl). Sekcje oraz zalecane wartości powiązanych z nimi zmiennych wymieniono w tabeli poniżej.
 
 | **Sekcja na stronie**                 | **Wartość item_list_id (ID techniczne)** | **Wartość item_list_name (Nazwa w raporcie)** |
 | ------------------------------------- | ---------------------------------------- | --------------------------------------------- |
@@ -223,6 +223,19 @@ Wprowadzenie tych trzech nowych zmiennych w obiekcie **`items`** jest kluczowe d
 | Strona Kategorii (Listing produktów)  | `category_products`                      | [Nazwa Kategorii, np. Listwy Ścienne]         |
 | Wyniki Wyszukiwania                   | `search_results`                         | Wyniki wyszukiwania                           |
 | Produkty powiązane (Karta produktu)   | `related_products`                       | Produkty powiązane                            |
+
+### Kluczowa zmiana
+
+Obecnie zdarzenie `view_item_list` aktywuje się wyłącznie podczas wejścia na stronę kategorii. Aktualnie parametr `item_list_id` przyjmuje dynamiczną, unikalną wartość dla każdej kategorii (np. `KategoriaID=51`, `KategoriaID=52`). To błędna konfiguracja.
+
+**Wymagana zmiana:** Parametr `item_list_id` powinien identyfikować **typ/rodzaj listy** (mechanizm), a nie jej zawartość. Zawartość jest już identyfikowana przez parametr `item_list_name`. Parametr `item_list_id` powinien przyjmować **stałą** wartość `category_products` dla **KAŻDEJ** kategorii (bez nr ID). Rodzaj kategorii jest już identyfikowany przez parametr `item_list_name`.
+
+W obecnej konfiguracji `item_list_id` ("KategoriaID=51") i `item_list_name` ("Szyny sufitowe") pełnią tę samą funkcję – oba wskazują na konkretną kolekcję produktów (dublowanie danych).
+
+Celem analitycznym jest odpowiedź na pytanie: *"Co sprzedaje lepiej – nawigacja przez menu (kategorie) czy wyszukiwarka?"*.
+
+* **Obecnie:** Musielibyśmy ręcznie sumować setki wierszy (każde ID osobno), co w GA4 jest niemożliwe bez eksportu do BigQuery.
+* **Po zmianie:** Wchodzimy w raport i widzimy w dwóch wierszach: `category_list` vs `search_results`. Od razu widać, który mechanizm ma wyższy współczynnik klikalności (CTR) i konwersji.
 
 ### Zasada numerowania pozycji (`index`)
 
@@ -244,7 +257,7 @@ Zmienne w obiekcie **`items`** dla tego produktu dane powinny przyjmować nastę
  //…
   item_id: "MD002",
   item_name: "Listwa ścienna z poliuretanu MD002",
-  item_list_id: "homepage_bestsellers",  // ID sekcji Bestsellery
+  item_list_id: "homepage_bestsellers",  // Rodzaj sekcji produktów
   item_list_name: "Bestsellery",         // Nazwa sekcji
   index: 0                               // Pozycja nr 1 na liście (liczone od 0)
   //..
@@ -262,7 +275,7 @@ JavaScript
  //…
   item_id: "DSP05",
   item_name: "Listwa przypodłogowa Decor System DSP05",
-  item_list_id: "category_products",  // ID strony kategorii
+  item_list_id: "category_products",  // Rodzaj sekcji produktów
   item_list_name: "Listwy przypodłogowe",         // Dynamiczna nazwa bieżącej kategorii
   index: 1                               // Pozycja nr 2 na liście (liczone od 0)
   //..
