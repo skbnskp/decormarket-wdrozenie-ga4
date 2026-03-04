@@ -213,16 +213,17 @@ Zaznaczam, że zmienna **`currency`** nie powinna znajdować się w obiekcie **`
 
 Wprowadzenie tych trzech zmiennych w obiekcie **`items`** jest kluczowe dla analityki. Pozwalają one ocenić efektywność **list produktów** znajdujących się w różnych sekcjach stron sklepu [decormarket.pl](http://decormarket.pl). Sekcje oraz zalecane wartości powiązanych z nimi zmiennych wymieniono w tabeli poniżej.
 
-| **Sekcja na stronie**                 | **Wartość item_list_id (ID techniczne)** | **Wartość item_list_name (Nazwa w raporcie)** |
-| ------------------------------------- | ---------------------------------------- | --------------------------------------------- |
-| Bestsellery (Strona główna)           | `homepage_bestsellers`                   | Bestsellery                                   |
-| Polecane (Strona główna)              | `homepage_recommended`                   | Polecane                                      |
-| Nowości (Strona główna)               | `homepage_new_arrivals`                  | Nowości                                       |
-| Szczególnie polecamy (Strona główna)  | `homepage_featured`                      | Szczególnie polecamy                          |
-| Artykuły (Produkty w sekcji blogowej) | `homepage_articles`                      | [Nazwa artykułu]                              |
-| Strona Kategorii (Listing produktów)  | `category_products`                      | [Nazwa Kategorii, np. Listwy Ścienne]         |
-| Wyniki Wyszukiwania                   | `search_results`                         | Wyniki wyszukiwania                           |
-| Produkty powiązane (Karta produktu)   | `related_products`                       | Produkty powiązane                            |
+| **Sekcja na stronie**                  | **Wartość item_list_id (ID techniczne)** | **Wartość item_list_name (Nazwa w raporcie)** |
+| -------------------------------------- | ---------------------------------------- | --------------------------------------------- |
+| Bestsellery (Strona główna)            | `homepage_bestsellers`                   | bestsellers                                   |
+| Polecane (Strona główna)               | `homepage_recommended`                   | recommended                                   |
+| Nowości (Strona główna)                | `homepage_new_arrivals`                  | new_arrivals                                  |
+| Szczególnie polecamy (Strona główna)   | `homepage_featured`                      | featured                                      |
+| Artykuły (Produkty w sekcji blogowej)  | `blog_recommended`                       | blog_[Nazwa artykułu]                         |
+| Strona Kategorii (Listing produktów)   | `category_products`                      | [Nazwa Kategorii, np. Listwy Ścienne]         |
+| Wyniki Wyszukiwania                    | `search_results`                         | search_results                                |
+| Produkty uzupełniające (Karta produktu)| `productpage_related`                    | related_product                               |
+| Polecamy kupić (Karta produktu)        | `productpage_recommened`                 | recommended_product                           |
 
 ### Kluczowa zmiana
 
