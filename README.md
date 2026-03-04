@@ -219,7 +219,7 @@ Wprowadzenie tych trzech zmiennych w obiekcie **`items`** jest kluczowe dla anal
 | Polecane (Strona główna)              | `homepage_recommended`                   | Polecane                                      |
 | Nowości (Strona główna)               | `homepage_new_arrivals`                  | Nowości                                       |
 | Szczególnie polecamy (Strona główna)  | `homepage_featured`                      | Szczególnie polecamy                          |
-| Artykuły (Produkty w sekcji blogowej) | `homepage_articles`                      | Artykuły                                      |
+| Artykuły (Produkty w sekcji blogowej) | `homepage_articles`                      | [Nazwa artykułu]                              |
 | Strona Kategorii (Listing produktów)  | `category_products`                      | [Nazwa Kategorii, np. Listwy Ścienne]         |
 | Wyniki Wyszukiwania                   | `search_results`                         | Wyniki wyszukiwania                           |
 | Produkty powiązane (Karta produktu)   | `related_products`                       | Produkty powiązane                            |
