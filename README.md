@@ -917,6 +917,7 @@ Linki to dokumentacji Google dot. zdarzenia purchase:
 3. Przekazywanie kontekstu listy w obiekcie items (item_list_id, item_list_name, index).
 4. Dodanie nowych parametrów w obiekcie items: coupon, discount.
 5. Dodanie parametrów user_data.email_address oraz user_data.phone_number. Na podstawie tych danych będzie działał Tag GAds Remarketing.
+6. Dodanie parametru customer_type - Typ klienta (new / returning) na podstawie bazy klientów sklepu (nieoparte na cookies)
 
 ### Javascript
 
