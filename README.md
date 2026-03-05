@@ -30,7 +30,7 @@ Wdrożenie poniższych wytycznych pozwoli na:
 
 Wszystkie zdarzenia muszą spełniać poniższe wymogi techniczne:
 
-- **Pełny zasięg kontenera GTM:** Kod kontenera Google Tag Manager musi zostać zaimplementowany na **każdej** podstronie serwisu (w sekcjach `<head>` oraz `<body>`). Obecna diagnostyka wykazuje, że na części podstron kod GTM nie jest ładowany, co skutkuje dziurami w danych. Prosimy o zaimplementowanie tagów na każdej stronie domeny decormarket.pl. Tabela z listą znajduje się w pliku [Lista nieotagowanych stron](Lista_nieotagowanych_stron.xlsx).
+- **Pełny zasięg kontenera GTM:** Kod kontenera Google Tag Manager musi zostać zaimplementowany na **każdej** podstronie serwisu. Z nieznanych nam powodów cyklicznie otrzymujemy alerty, że część stron domeny nie jest otagowana, mimo poprawnej konfiguracji w GTM. Prosimy o zdiagnozowanie problemu i zaimplementowanie tagów na wszystkich stronach DecorSystem. Tabela z przykładową listą nieotagowanych stron (domena decormarket) znajduje się w pliku [Lista nieotagowanych stron](Lista_nieotagowanych_stron.xlsx).
 - **Higiena kodu (Usunięcie reliktów):** Należy usunąć z kodu źródłowego wszelkie nieużywane skrypty analityczne, w szczególności stare tagi **Universal Analytics (UA)**. Pozostawienie ich może powodować konflikty danych i niepotrzebnie obciąża stronę.
 - **Struktura danych:** Utrzymujemy obecnie stosowany obiekt `eventModel` jako kontener na dane e-commerce.
 - **Typy danych:** Wartości finansowe (`price`, `value`, `shipping`, `tax`, `discount`) muszą być przesyłane jako **Liczby (Number)** z kropką jako separatorem dziesiętnym (np. `145.50`), a nie jako tekst.
@@ -52,9 +52,9 @@ W tabeli poniżej wymieniono zdarzenia, które należy zaktualizować lub wdroż
 | add_to_cart                 | Kliknięcie "Dodaj do koszyka" (karta produktu/lista)                       | 🟡 DataLayer do zaktualizowania |
 | view_cart                   | Wejście na stronę `/koszyk`                                                | 🟡 DataLayer do zaktualizowania |
 | remove_from_cart            | Kliknięcie "Usuń" (X) w koszyku **lub zmniejszenie ilości produktu do 0.** | 🟡 DataLayer do zaktualizowania |
-| begin_checkout              | Kliknięcie "Przejdź dalej" w 1. kroku koszyka                              | 🔴 **Do wdrożenia**             |
-| add_shipping_info           | Kliknięcie "Przejdź dalej" (razem z powyższym)                             | 🔴 **Do wdrożenia**             |
-| add_payment_info            | Kliknięcie "Przejdź dalej" (razem z powyższym)                             | 🔴 **Do wdrożenia**             |
+| begin_checkout              | Wpisanie danych adresowych w koszyku                                       | 🔴 **Do wdrożenia**             |
+| add_shipping_info           | Wybranie sposobu dostawy w koszyku z listy bulletpoint                     | 🔴 **Do wdrożenia**             |
+| add_payment_info            | Wybranie sposobu płatności w koszyku z listy bulletpoint                   | 🔴 **Do wdrożenia**             |
 | purchase                    | Wyświetlenie strony podziękowania (Thank You Page)                         | 🟡 DataLayer do zaktualizowania |
 
 ---
@@ -66,7 +66,7 @@ W tej tabeli wymieniono zdarzenia, które należy zaktualizować lub wdrożyć, 
 | **Nazwa Zdarzenia (Event)** | **Miejsce wywołania (Trigger)**                      | **Status**                     |
 | --------------------------- | ---------------------------------------------------- | ------------------------------ |
 | view_item_list              | Przewinięcie strony do sekcji (np. Bestsellery)      | 🟡 **Do poprawy**               |
-| select_item                 | Kliknięcie w produkt na liście (np. w Bestsellerach) | 🔴 **Do wdrożenia**             |
+| select_item                 | Kliknięcie w produkt na liście (np. w kategorii)     | 🔴 **Do wdrożenia**             |
 | view_item                   | Wyświetlenie szczegółów produktu (karta produktu)    | 🟡 DataLayer do zaktualizowania |
 | search                      | Załadowanie strony wyników wyszukiwania              | 🔴 **Do wdrożenia**             |
 | add_to_wishlist             | Kliknięcie w serduszko (Ulubione)                    | 🔴 **Do wdrożenia**             |
@@ -175,7 +175,7 @@ Należy dodać do obiektu items (we wszystkich zdarzeniach: view_item, add_to_ca
 **Wymagania dla programisty:**
 
 1. Wartość tego parametru musi być pobierana z bazy danych (np. z pola integrującego z systemem **Subiekt**).
-2. Musi to być **unikalny identyfikator magazynowy**, który jest wspólny dla wszystkich "wcieleń" tego samego produktu na stronie.
+2. Musi to być **unikalny identyfikator magazynowy**, który jest wspólny dla wszystkich "wcieleń" tego samego produktu na stronie (SKU).
 3. Parametr musi zostać dodany do każdego produktu w tablicy `items`.
 
 ```jsx
@@ -229,13 +229,13 @@ Wprowadzenie tych trzech zmiennych w obiekcie **`items`** jest kluczowe dla anal
 
 Obecnie zdarzenie `view_item_list` aktywuje się wyłącznie podczas wejścia na stronę kategorii. Aktualnie parametr `item_list_id` przyjmuje dynamiczną, unikalną wartość dla każdej kategorii (np. `KategoriaID=51`, `KategoriaID=52`). To błędna konfiguracja.
 
-**Wymagana zmiana:** Parametr `item_list_id` powinien identyfikować **typ/rodzaj listy** (mechanizm), a nie jej zawartość. Zawartość jest już identyfikowana przez parametr `item_list_name`. Parametr `item_list_id` powinien przyjmować **stałą** wartość `category_products` dla **KAŻDEJ** kategorii (bez nr ID). Rodzaj kategorii jest już identyfikowany przez parametr `item_list_name`.
+**Wymagana zmiana:** Parametr `item_list_id` powinien identyfikować **typ/rodzaj listy** (mechanizm), a nie jej zawartość. Zawartość jest już identyfikowana przez parametr `item_list_name`. Parametr `item_list_id` powinien przyjmować **stałą** wartość dla **WSZYSTKICH** kategorii - `category_products` (bez nr ID). Rodzaj kategorii jest już identyfikowany przez parametr `item_list_name`. Analogicznie sytuacja ma się z listami wyświetlanymi na artykułach blogowych - powinny posiadać to samo ID do agregowania danych, natomiast różne nazwy, aby rozstrzygnąć, które artykuły najlepiej konwertują.
 
 W obecnej konfiguracji `item_list_id` ("KategoriaID=51") i `item_list_name` ("Szyny sufitowe") pełnią tę samą funkcję – oba wskazują na konkretną kolekcję produktów (dublowanie danych).
 
 Celem analitycznym jest odpowiedź na pytanie: *"Co sprzedaje lepiej – nawigacja przez menu (kategorie) czy wyszukiwarka?"*.
 
-* **Obecnie:** Musielibyśmy ręcznie sumować setki wierszy (każde ID osobno), co w GA4 jest niemożliwe bez eksportu do BigQuery.
+* **Obecnie:** Musielibyśmy ręcznie sumować setki wierszy (każde ID osobno), co znacznie komplikuje analizy ścieżek klientów oraz porównywanie efektywności poszczególnych kategorii. 
 * **Po zmianie:** Wchodzimy w raport i widzimy w dwóch wierszach: `category_list` vs `search_results`. Od razu widać, który mechanizm ma wyższy współczynnik klikalności (CTR) i konwersji.
 
 ### Zasada numerowania pozycji (`index`)
@@ -249,7 +249,7 @@ Zmienna **`index`** określa pozycję produktu na danej liście w momencie jej w
 
 **Przykład A**: Produkt w sekcji "Bestsellery" na Stronie Głównej
 
-Załóżmy, że produkt "Listwa ścienna MD002" wyświetla się jako drugi kafelek w sekcji Bestsellery.
+Załóżmy, że produkt "Listwa ścienna MD002" wyświetla się jako pierwszy kafelek w sekcji Bestsellery.
 
 Zmienne w obiekcie **`items`** dla tego produktu dane powinny przyjmować następujące wartości:
 
@@ -278,7 +278,7 @@ JavaScript
   item_name: "Listwa przypodłogowa Decor System DSP05",
   item_list_id: "category_products",  // Rodzaj sekcji produktów
   item_list_name: "Listwy przypodłogowe",         // Dynamiczna nazwa bieżącej kategorii
-  index: 1                               // Pozycja nr 2 na liście (liczone od 0)
+  index: 9                               // Pozycja nr 10 na liście (liczone od 0)
   //..
 }
 ```
@@ -359,7 +359,6 @@ Proszę o wywoływanie kodu JavaScript w momencie kliknięcia przycisku "Dodaj d
            // --- DOTYCHCZASOWE POLA ---
             item_id: "22539",            
             item_name: "Listwa ścienna dekoracyjna biała DS003",
-            item_master_id: "LKO13",
             quantity: 2,  
             affiliation: "Dekoracje do domu i wnętrz - Decor Market",
             item_brand: "Vellano by Decor System"
@@ -382,6 +381,7 @@ Proszę o wywoływanie kodu JavaScript w momencie kliknięcia przycisku "Dodaj d
             index: 1, // Pozycja produktu z listy produktów
             
             // 4. Inne
+            item_master_id: "LKO13", // SKU zgodne z Subiekt
             discount: 0.00,
             
           }
@@ -459,7 +459,6 @@ Proszę o wywoływanie kodu JavaScript w momencie przechodzenia do koszyka, zawi
            // --- DOTYCHCZASOWE POLA ---
             item_id: "22539",            
             item_name: "Listwa ścienna dekoracyjna biała DS003",
-            item_master_id: "LKO13",  
             quantity: 2,  
             affiliation: "Dekoracje do domu i wnętrz - Decor Market",
             item_brand: "Vellano by Decor System"
@@ -483,6 +482,7 @@ Proszę o wywoływanie kodu JavaScript w momencie przechodzenia do koszyka, zawi
             index: 1, // Pozycja produktu z listy produktów
             
             // 4. Inne
+            item_master_id: "LKO13", // SKU zgodne z Subiekt
             discount: 0.00,
             coupon: "RABAT_NA_LISTWY", // NOWE: Kupon rabatowy dotyczący konkretnego produktu
             
@@ -675,7 +675,7 @@ Proszę o wywoływanie poniższego kodu w momencie kliknięcia przycisku "Przejd
             // --- KLUCZOWE POLA PRODUKTU ---
             item_id: "189",            
             item_name: "Listwa sufitowa LP2",
-            item_master_id: "LKO13",  
+            item_master_id: "LKO13", // SKU zgodne z Subiekt
             quantity: 1,
             affiliation: "Dekoracje do domu i wnętrz - Decor Market",
             item_brand: "Decor System",
@@ -699,7 +699,7 @@ Proszę o wywoływanie poniższego kodu w momencie kliknięcia przycisku "Przejd
           },
           {
              // ... kolejny produkt w koszyku ...
-             item_id: "SKU_ABC",
+             item_id: "343426",
              // ...
           }
         ]
@@ -725,7 +725,7 @@ Zgodnie z dokumentacją Google, GA4 przy zdarzeniu `add_shipping_info` potrzebuj
 
 ### **Kluczowe zmiany i wymagania funkcjonalne (UX)**
 
-1. **Moment wywołania (Trigger):** Zdarzenie musi zostać wywołane **w momencie kliknięcia przycisku "Przejdź dalej"**, równolegle ze zdarzeniem `begin_checkout`.
+1. **Moment wywołania (Trigger):** Zdarzenie musi zostać wywołane **w momencie kliknięcia przycisku "Przejdź dalej"**, po zdarzeniu `begin_checkout`.
 2. **Pobieranie danych:** Skrypt musi dynamicznie pobrać nazwę wybranej metody dostawy (z zaznaczonego radio buttona) i podstawić ją pod parametr `shipping_tier`.
 3. **Parametr `shipping_tier`:** Jest to parametr wymagany dla tego zdarzenia:
 
@@ -733,11 +733,11 @@ Zgodnie z dokumentacją Google, GA4 przy zdarzeniu `add_shipping_info` potrzebuj
 - Wartość musi być czytelnym ciągiem tekstowym (String).
 - Ze względu na istnienie płatnych dodatków (Gwarancja, Ekspres) w opcji Decor System (kurier), parametr `shipping_tier` musi być budowany dynamicznie, łącząc metodę główną z wybranymi dodatkami.
 
-1. **Walidacja:** Zdarzenie wysyłamy tylko wtedy, gdy walidacja formularza przebiegła pomyślnie i użytkownik przechodzi do kolejnego kroku.
+- **Walidacja:** Zdarzenie wysyłamy tylko wtedy, gdy walidacja formularza przebiegła pomyślnie i użytkownik przechodzi do kolejnego kroku.
 
 ### Javascript
 
-Obecnie zdarzenie zazwyczaj nie jest wysyłane, co powoduje lukę w raportach Checkout Funnel w GA4. Poniżej zamieszczam wzór wartości, jakie parametr powinien przyjmować w zależności od wybranych opcji dostawy:
+Obecnie zdarzenie nie jest wysyłane, co powoduje lukę w raportach Checkout Funnel w GA4. Poniżej zamieszczam wzór wartości, jakie parametr powinien przyjmować w zależności od wybranych opcji dostawy:
 
 | **Wybór użytkownika na stronie** | **Wynikowy string shipping_tier (do wysłania)** |
 | -------------------------------- | ----------------------------------------------- |
@@ -822,7 +822,7 @@ Zgodnie z dokumentacją Google, GA4 przy zdarzeniu `add_payment_info` potrzebuje
 
 ### **Kluczowe zmiany i wymagania funkcjonalne (UX)**
 
-1. **Moment wywołania (Trigger):** Zdarzenie musi zostać wywołane **w momencie kliknięcia przycisku "Przejdź dalej"**, równolegle ze zdarzeniem `begin_checkout` oraz `add_shipping_info`.
+1. **Moment wywołania (Trigger):** Zdarzenie musi zostać wywołane **w momencie kliknięcia przycisku "Przejdź dalej"**, po zdarzeniu `begin_checkout` oraz `add_shipping_info`.
 2. **Pobieranie danych:** Skrypt musi dynamicznie pobrać nazwę wybranej metody płatności (z zaznaczonego radio buttona) i podstawić ją pod parametr `payment_type`.
 3. **Parametr `payment_type`:** Jest to parametr wymagany dla tego zdarzenia.
 4. **Walidacja:** Zdarzenie wysyłamy tylko wtedy, gdy walidacja formularza przebiegła pomyślnie i użytkownik przechodzi do kolejnego kroku.
@@ -911,13 +911,15 @@ Linki to dokumentacji Google dot. zdarzenia purchase:
 
 <https://developers.google.com/analytics/devguides/collection/ga4/ecommerce?authuser=1&client_type=gtag#make_a_purchase_or_issue_a_refund>
 
+Na części sklepów DecorSystem (decorsystem.pl, decorsystem.com.pl, dekory24.pl, przypodlogowe.pl) podczas wydarzenia Purchase w dataLayer oprócz obiektu eventModel  jest również przesyłany obiekt enhanced_conversion_data, zawierający dane adresowe podane przez klienta w transakcji. Prosimy, aby szablon zdarzenia purchase został ujednolicony we wszystkich domenach Decor System (tzn. dodać to również na [decormarket.pl](http://decormarket.pl) oraz decormarket.de).
+
 ### **Kluczowe zmiany**
 
 1. Nowe parametry w obiekcie eventModel: tax, shipping, coupon, customer_type.
 2. Dodanie pełnego drzewa kategorii w obiekcie items (do 5 poziomów).
 3. Przekazywanie kontekstu listy w obiekcie items (item_list_id, item_list_name, index).
 4. Dodanie nowych parametrów w obiekcie items: coupon, discount.
-5. Dodanie parametrów user_data.email_address oraz user_data.phone_number. Na podstawie tych danych będzie działał Tag GAds Remarketing.
+5. Dodanie obiektu enhanced_conversion_data. Na podstawie tych danych będzie działał Tag GAds Remarketing oraz tworzone będą nowe listy odbiorców (audiences).
 6. Dodanie parametru customer_type - Typ klienta (new / returning) na podstawie bazy klientów sklepu (nieoparte na cookies)
 
 ### Javascript
@@ -975,10 +977,22 @@ Proszę o wywoływanie kodu JavaScript w momencie kliknięcia przycisku "Kupuję
         // --- NOWOŚĆ: Sekcja User Data dla Google Ads (Enhanced Conversions) ---
         // WAŻNE: Te dane muszą pochodzić z backendu/bazy danych, a nie z HTML strony.
         // GTM automatycznie zahaszuje (zaszyfruje) te dane przed wysłaniem do Google.
-        user_data: {
-          email_address: "jan.kowalski@example.com", // Adres e-mail klienta
-          phone_number: "+48123456789",              // Numer telefonu (format E.164 zalecany)
-        },
+        enhanced_conversion_data: [
+          {
+          email: "patryk@decorsystem.pl",
+          phone_number: "+48796369954",
+          first_name: "TEST",
+          last_name: "TESTOWSKI",
+          home_address: 
+            {
+            address_id: "Prądocin 11",
+            street: "Prądocin 11",
+            city: "Gorzów Wielkopolski",
+            region: "",
+            postal_code: "66-400",
+            country: "Polska"
+            }
+      	  }],
         items: [
           {
             item_id: "22538",          // ID produktu (SKU)
@@ -1024,11 +1038,9 @@ Zgodnie z dokumentacją Google, GA4 przy zdarzeniu `view_item_list` potrzebuje 4
 ### **Kluczowe zmiany i wymagania funkcjonalne (UX)**
 
 1. **Moment wywołania (Trigger):** To zdarzenie NIE powinno się odpalać automatycznie po załadowaniu strony (chyba że lista jest na samej górze). Powinno zostać wywołane w momencie, gdy lista produktów **pojawia się w widocznym obszarze ekranu** (Viewport).
-    - Zalecane rozwiązanie techniczne: Użycie **Intersection Observer API**.
-    - Dla sliderów (karuzeli): Zdarzenie wysyłamy dla produktów widocznych w pierwszym widoku. Jeśli użytkownik przewinie slider, można doładować kolejne zdarzenie (opcjonalnie) lub wysłać od razu całą listę załadowaną w HTML.
 2. **Parametry listy:** Każdy produkt w tablicy `items` musi posiadać parametry identyfikujące listę, na której się znajduje:
-    - `item_list_id`: ID techniczne (np. "homepage_bestsellers").
-    - `item_list_name`: Nazwa czytelna (np. "Bestsellery").
+    - `item_list_id`: ID techniczne (np. "category_products").
+    - `item_list_name`: Nazwa czytelna (np. "Listwy czarne").
     - `index`: Pozycja produktu na liście (liczba całkowita, start od 0).
 3. **Unikalność:** Zdarzenie dla danej listy na danej podstronie powinno wysłać się tylko raz w trakcie sesji (chyba że użytkownik odświeży stronę).
 
@@ -1069,8 +1081,8 @@ Obecnie zdarzenie nie jest mierzone. Poniżej przykład kodu dla sekcji "Bestsel
             item_category4: "Białe",                       
             item_category5: "Kategoria5",                  
             item_list_id: "homepage_bestsellers",              
-           item_list_name: "Bestsellery",                 
-           index: 0,                                      
+            item_list_name: "Bestsellery",                 
+            index: 0,                                      
             price: 17.04,                                  
             quantity: 2                                    
           },
@@ -1154,8 +1166,8 @@ Obecnie zdarzenie nie jest mierzone. Poniżej przykład kodu dla kliknięcia w p
             item_category4: "Białe",                       
             item_category5: "Kategoria5",                  
             item_list_id: "homepage_bestsellers",              
-           item_list_name: "Bestsellery",                 
-           index: 0,                                      
+            item_list_name: "Bestsellery",                 
+            index: 0,                                      
             price: 17.04,                                  
             quantity: 2        
           }
@@ -1246,8 +1258,8 @@ Proszę o wywoływanie kodu JavaScript w momencie wejścia na kartę produktu, z
             item_category4: "Białe",                       
             item_category5: "Kategoria5",                  
             item_list_id: "homepage_bestsellers",              
-           item_list_name: "Bestsellery",                 
-           index: 0,                                      
+            item_list_name: "Bestsellery",                 
+            index: 0,                                      
             price: 17.04,                                  
             quantity: 2        
           }
@@ -1313,8 +1325,8 @@ Obecnie zdarzenie nie jest mierzone. Poniżej przykład kodu dla dodania pojedyn
             item_category4: "Białe",                       
             item_category5: "Kategoria5",                  
             item_list_id: "homepage_bestsellers",              
-           item_list_name: "Bestsellery",                 
-           index: 0,                                      
+            item_list_name: "Bestsellery",                 
+            index: 0,                                      
             price: 17.04,                                  
             quantity: 2   
           }
