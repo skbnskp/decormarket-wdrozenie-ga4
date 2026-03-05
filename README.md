@@ -37,6 +37,8 @@ Wszystkie zdarzenia muszą spełniać poniższe wymogi techniczne:
 - **Waluta:** Kod `PLN` musi być obecny w każdym zdarzeniu transakcyjnym.
 - **Struktura Produktu:** Obiekt produktu w tablicy `items` musi być spójny w całym serwisie (te same ID i nazwy w koszyku, co w zamówieniu).
 
+Zrzuty ekranów panelu GA4 z brakującymi danymi umieszczono w folderze [braki_w_ga4](./braki_w_ga4).
+
 ---
 
 # 2. Lista eventów priorytetowych
@@ -211,7 +213,7 @@ Zaznaczam, że zmienna **`currency`** nie powinna znajdować się w obiekcie **`
 
 ## Szczegółowy opis wymagań dot. zmiennych **`item_list_name`**, **`item_list_id`**, **`index`**
 
-Wprowadzenie tych trzech zmiennych w obiekcie **`items`** jest kluczowe dla analityki. Pozwalają one ocenić efektywność **list produktów** znajdujących się w różnych sekcjach stron sklepu [decormarket.pl](http://decormarket.pl). Sekcje oraz zalecane wartości powiązanych z nimi zmiennych wymieniono w tabeli poniżej.
+Wprowadzenie tych trzech zmiennych w obiekcie **`items`** jest kluczowe dla analityki. Pozwalają one ocenić efektywność **list produktów** znajdujących się w różnych sekcjach stron sklepu [decormarket.pl](http://decormarket.pl). Sekcje oraz zalecane wartości powiązanych z nimi zmiennych wymieniono w tabeli poniżej. Zrzuty ekranów przedstawiające wymienione sekcje na stronach zamieszczono w folderze [listy_produktow_przyklady](./listy_produktow_przyklady).
 
 | **Sekcja na stronie**                  | **Wartość item_list_id (ID techniczne)** | **Wartość item_list_name (Nazwa w raporcie)** |
 | -------------------------------------- | ---------------------------------------- | --------------------------------------------- |
