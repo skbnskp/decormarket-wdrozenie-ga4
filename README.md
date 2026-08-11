@@ -2,7 +2,7 @@
 
 # Specyfikacja Wdrożeniowa Analityki E-commerce (GA4)
 
-Wersja dokumentu: 1.3
+Wersja dokumentu: 1.4 (aktualizacja 2026-08-11 — po ustaleniach z Selly: definicja customer_type, triggery lejka koszyka)
 
 Autor: Patryk Skibiński
 
@@ -54,9 +54,9 @@ W tabeli poniżej wymieniono zdarzenia, które należy zaktualizować lub wdroż
 | add_to_cart                 | Kliknięcie "Dodaj do koszyka" (karta produktu/lista)                       | 🟡 DataLayer do zaktualizowania |
 | view_cart                   | Wejście na stronę `/koszyk`                                                | 🟡 DataLayer do zaktualizowania |
 | remove_from_cart            | Kliknięcie "Usuń" (X) w koszyku **lub zmniejszenie ilości produktu do 0.** | 🟡 DataLayer do zaktualizowania |
-| begin_checkout              | Wpisanie danych adresowych w koszyku                                       | 🔴 **Do wdrożenia**             |
-| add_shipping_info           | Wybranie sposobu dostawy w koszyku z listy bulletpoint                     | 🔴 **Do wdrożenia**             |
-| add_payment_info            | Wybranie sposobu płatności w koszyku z listy bulletpoint                   | 🔴 **Do wdrożenia**             |
+| begin_checkout              | Kliknięcie pierwszego «Przejdź dalej» w koszyku (po pomyślnej walidacji) | 🔴 **Do wdrożenia**             |
+| add_shipping_info           | Kliknięcie radio buttona metody dostawy ORAZ ponownie przy «Przejdź dalej» (wartość zaznaczona lub domyślna) | 🔴 **Do wdrożenia**             |
+| add_payment_info            | Kliknięcie radio buttona metody płatności ORAZ ponownie przy «Przejdź dalej» (wartość zaznaczona lub domyślna) | 🔴 **Do wdrożenia**             |
 | purchase                    | Wyświetlenie strony podziękowania (Thank You Page)                         | 🟡 DataLayer do zaktualizowania |
 
 ---
@@ -641,15 +641,15 @@ Zgodnie z dokumentacją Google, GA4 przy zdarzeniu `begin_checkout` potrzebuje p
 
     Obecnie śledzenie drogi klienta w koszyku jest utrudnione ze względu na obecność form dot. wysyłki oraz płatności na pierwszej stronie koszyka (KROK 1/4). Gdyby formy te znajdowały się na osobnych kartach łatwiej byłoby śledzić moment, w którym użytkownik rezygnuje z koszyka.
 
-    W związku z obecną sytuacją zdarzenia begin_checkout, add_payment_info oraz add_shipping_info muszą być wysyłane **jednocześnie**, w momencie kliknięcia przycisku **Przejdź dalej**.
+    Zdarzenie begin_checkout wysyłamy w momencie kliknięcia pierwszego przycisku „Przejdź dalej" (po pomyślnej walidacji formularza). Zdarzenia add_shipping_info i add_payment_info mają własne triggery (kliknięcia radio buttonów — opis w ich sekcjach), ale przy „Przejdź dalej" są wysyłane dodatkowo, zawsze — z wartościami aktualnie zaznaczonymi lub domyślnymi, jeśli klient w nic nie klikał. W praktyce kliknięcie „Przejdź dalej" wysyła więc 3 zdarzenia jednocześnie. Gwarantuje to, że żaden koszyk przechodzący dalej nie zostanie bez danych o dostawie i płatności (klienci akceptujący opcje domyślne to znacząca część ruchu — ich brak zaniżałby statystyki najpopularniejszych metod). 
 
     ![image.png](image.png)
 
 ### **Kluczowe zmiany i wymagania funkcjonalne (UX)**
 
 1. **Moment wywołania (Trigger):** Ze względu na specyfikę koszyka, gdzie wybór dostawy i płatności następuje w pierwszym kroku, zdarzenie `begin_checkout` musi zostać wywołane **w momencie kliknięcia przycisku "Przejdź dalej"** (podsumowującego koszyk).
-2. **Sekwencja zdarzeń:** Kliknięcie przycisku "Przejdź dalej" powinno wyzwolić sekwencję zdarzeń (lub wysłać je jedno po drugim): `begin_checkout` -> `add_shipping_info` -> `add_payment_info`. Ten rozdział dotyczy pierwszego z nich.
-3. **Walidacja:** Zdarzenie powinno się wysłać tylko po pomyślnej walidacji formularza (np. jeśli użytkownik nie wybrał metody dostawy i wyskoczył błąd, zdarzenie NIE powinno się wysłać).
+2. **Sekwencja zdarzeń:** Kliknięcie przycisku "Przejdź dalej" powinno wyzwolić sekwencję zdarzeń (lub wysłać je jedno po drugim): `add_shipping_info` -> `add_payment_info` -> `begin_checkout`. Ten rozdział dotyczy ostatniego z nich.
+3. **Walidacja:** Zdarzenie powinno się wysłać tylko po pomyślnej walidacji formularza.
 4. **Struktura danych:** Ujednolicenie obiektu produktu (dodanie pełnego drzewa kategorii) oraz przeniesienie currency do `eventModel`.
 
 ### Javascript
@@ -727,7 +727,9 @@ Zgodnie z dokumentacją Google, GA4 przy zdarzeniu `add_shipping_info` potrzebuj
 
 ### **Kluczowe zmiany i wymagania funkcjonalne (UX)**
 
-1. **Moment wywołania (Trigger):** Zdarzenie musi zostać wywołane **w momencie kliknięcia przycisku "Przejdź dalej"**, po zdarzeniu `begin_checkout`.
+1. **Moment wywołania** (dwa triggery): 
+  (a) każde kliknięcie radio buttona metody dostawy oraz każda zmiana stanu dodatków (Gwarancja, Ekspres) — dzięki temu widzimy opcje rozważane przez klientów, którzy porzucili koszyk; 
+  (b) kliknięcie „Przejdź dalej" (po pomyślnej walidacji) — z wartością ostatecznie zaznaczoną lub domyślną, jeśli klient w nic nie klikał. Kilka zdarzeń na jeden koszyk jest akceptowalne — po stronie analityki wiążąca jest ostatnia wartość przed purchase.
 2. **Pobieranie danych:** Skrypt musi dynamicznie pobrać nazwę wybranej metody dostawy (z zaznaczonego radio buttona) i podstawić ją pod parametr `shipping_tier`.
 3. **Parametr `shipping_tier`:** Jest to parametr wymagany dla tego zdarzenia:
 
@@ -824,7 +826,7 @@ Zgodnie z dokumentacją Google, GA4 przy zdarzeniu `add_payment_info` potrzebuje
 
 ### **Kluczowe zmiany i wymagania funkcjonalne (UX)**
 
-1. **Moment wywołania (Trigger):** Zdarzenie musi zostać wywołane **w momencie kliknięcia przycisku "Przejdź dalej"**, po zdarzeniu `begin_checkout` oraz `add_shipping_info`.
+1. **Moment wywołania** (dwa triggery): (a) każde kliknięcie radio buttona metody płatności — dzięki temu widzimy opcje rozważane przez klientów, którzy porzucili koszyk; (b) kliknięcie „Przejdź dalej" (po pomyślnej walidacji) — z wartością ostatecznie zaznaczoną lub domyślną, jeśli klient w nic nie klikał. Kilka zdarzeń na jeden koszyk jest akceptowalne — po stronie analityki wiążąca jest ostatnia wartość przed purchase.
 2. **Pobieranie danych:** Skrypt musi dynamicznie pobrać nazwę wybranej metody płatności (z zaznaczonego radio buttona) i podstawić ją pod parametr `payment_type`.
 3. **Parametr `payment_type`:** Jest to parametr wymagany dla tego zdarzenia.
 4. **Walidacja:** Zdarzenie wysyłamy tylko wtedy, gdy walidacja formularza przebiegła pomyślnie i użytkownik przechodzi do kolejnego kroku.
@@ -922,7 +924,20 @@ Na części sklepów DecorSystem (decorsystem.pl, decorsystem.com.pl, dekory24.p
 3. Przekazywanie kontekstu listy w obiekcie items (item_list_id, item_list_name, index).
 4. Dodanie nowych parametrów w obiekcie items: coupon, discount.
 5. Dodanie obiektu enhanced_conversion_data. Na podstawie tych danych będzie działał Tag GAds Remarketing oraz tworzone będą nowe listy odbiorców (audiences).
-6. Dodanie parametru customer_type - Typ klienta (new / returning) na podstawie bazy klientów sklepu (nieoparte na cookies)
+6. Dodanie parametru customer_type -  typ klienta (new / returning), definicja w podsekcji poniżej.
+
+#### **Customer type** (definicja ustalona z Selly, w korespondencji zlecenia 2026-08-11)
+
+Wartość wyliczana w backendzie po znormalizowanym adresie e-mail podanym w kasie (małe litery, bez spacji), identycznie dla gości i zalogowanych:
+
+`returning` — gdy w ciągu ostatnich **540 dni** istnieje na ten adres co najmniej jedno zamówienie kwalifikujące się do historii zakupowej,
+`new` — w przeciwnym razie.
+Kwalifikacja zamówienia do historii zakupowej zależy od metody płatności:
+
+**bramka online** (Przelewy24, PayU, PayPal, Stripe itd.): liczy się tylko zamówienie z zarejestrowaną wpłatą (status „Zaksięgowana wpłata na koncie" lub dalszy); porzucone płatności („Złożone" bez wpłaty) pomijamy,
+**pobranie i przelew tradycyjny**: liczy się niezależnie od statusu „Złożone" (te zamówienia nie przechodzą przez księgowanie wpłaty — zweryfikowano w ERP: 98,5% pobrań i 81% przelewów ze statusem „Złożone" ma dokument sprzedaży),
+statusy **„Anulowane"** i **„Zawieszone"** pomijamy zawsze.
+Okno 540 dni celowo zgodne z zaleceniem Google: klient wracający po >540 dniach liczy się jako new (klient „odzyskany" — spójność z celami pozyskiwania nowych klientów w Google Ads).
 
 ### Javascript
 
@@ -975,7 +990,7 @@ Proszę o wywoływanie kodu JavaScript w momencie kliknięcia przycisku "Kupuję
         tax: 6.37,                     // NOWE: Kwota podatku VAT (liczba)
         shipping: 15.00,               // NOWE: Koszt dostawy (liczba)
         coupon: "LATO_2025",           // NOWE: Kod kuponu rabatowego na całe zamówienie (jeśli użyto)
-        customer_type: "returning",     // NOWE: Typ klienta (new / returning) na podstawie bazy klientów sklepu (nieoparte na cookies)
+        customer_type: "returning",    // Typ klienta wg definicji w podsekcji powyżej (e-mail + 540 dni + kwalifikacja per metoda płatności)
         // --- NOWOŚĆ: Sekcja User Data dla Google Ads (Enhanced Conversions) ---
         // WAŻNE: Te dane muszą pochodzić z backendu/bazy danych, a nie z HTML strony.
         // GTM automatycznie zahaszuje (zaszyfruje) te dane przed wysłaniem do Google.
